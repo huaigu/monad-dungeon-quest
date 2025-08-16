@@ -1,54 +1,55 @@
+@import url("nes.css/css/nes.min.css");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Monad Dungeon Design System - Pixel Art Dungeon Crawler */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+/* Monad Dungeon Design System - NES.css Enhanced Pixel Art */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 @layer base {
   :root {
-    /* Dungeon Color Palette */
-    --background: 240 8% 8%;
-    --foreground: 50 90% 85%;
+    /* NES.css enhanced dungeon colors */
+    --background: 219 30% 18%;
+    --foreground: 0 0% 100%;
 
-    --card: 240 12% 12%;
-    --card-foreground: 50 90% 85%;
+    --card: 219 30% 22%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 12% 12%;
-    --popover-foreground: 50 90% 85%;
+    --popover: 219 30% 22%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 45 95% 65%;
-    --primary-foreground: 240 8% 8%;
+    --primary: 212 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 15% 20%;
-    --secondary-foreground: 50 90% 85%;
+    --secondary: 269 100% 75%;
+    --secondary-foreground: 219 30% 18%;
 
-    --muted: 240 12% 15%;
-    --muted-foreground: 50 30% 65%;
+    --muted: 219 30% 25%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 270 75% 65%;
-    --accent-foreground: 240 8% 8%;
+    --accent: 158 100% 50%;
+    --accent-foreground: 219 30% 18%;
 
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 50 90% 85%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 15% 25%;
-    --input: 240 15% 25%;
-    --ring: 45 95% 65%;
+    --border: 0 0% 70%;
+    --input: 219 30% 25%;
+    --ring: 212 100% 50%;
 
-    /* Dungeon Game Colors */
-    --dungeon-wall: 240 8% 18%;
-    --dungeon-floor: 240 12% 12%;
-    --dungeon-treasure: 45 95% 65%;
-    --dungeon-portal: 270 75% 65%;
-    --dungeon-player: 120 75% 55%;
-    --dungeon-shadow: 240 20% 5%;
+    /* Enhanced Dungeon Game Colors */
+    --dungeon-wall: 0 0% 20%;
+    --dungeon-floor: 219 30% 18%;
+    --dungeon-treasure: 51 100% 50%;
+    --dungeon-portal: 269 100% 75%;
+    --dungeon-player: 158 100% 50%;
+    --dungeon-shadow: 219 30% 10%;
     
-    /* Game UI */
-    --game-border: 50 30% 40%;
-    --game-highlight: 50 90% 85%;
-    --game-success: 120 75% 55%;
-    --game-warning: 30 95% 65%;
+    /* NES Game UI */
+    --nes-success: 158 100% 50%;
+    --nes-warning: 51 100% 50%;
+    --nes-error: 0 100% 50%;
+    --nes-primary: 212 100% 50%;
 
     --radius: 0.5rem;
 
@@ -114,7 +115,8 @@
   }
 
   body {
-    @apply bg-background text-foreground font-mono;
+    @apply bg-background text-foreground;
+    font-family: "Press Start 2P", monospace;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
@@ -122,60 +124,86 @@
 }
 
 @layer components {
-  /* Pixel perfect grid styling */
+  /* NES.css enhanced dungeon styling */
+  .dungeon-container {
+    @apply nes-container is-dark with-title;
+  }
+  
   .dungeon-grid {
-    @apply grid gap-0 border-2 border-game-border;
+    @apply grid gap-1 p-4 bg-[hsl(var(--dungeon-shadow))] border-4;
     grid-template-columns: repeat(10, 1fr);
+    border-style: solid;
+    border-color: #fff;
     image-rendering: pixelated;
   }
   
   .dungeon-cell {
-    @apply aspect-square border border-game-border/30 relative overflow-hidden;
+    @apply relative overflow-hidden;
     width: 32px;
     height: 32px;
+    border: 2px solid #fff;
+    background: #212529;
   }
   
   .cell-wall {
-    @apply bg-[hsl(var(--dungeon-wall))] border-game-border;
+    background: #212529;
+    position: relative;
+  }
+  
+  .cell-wall::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(45deg, #343a40 25%, transparent 25%),
+      linear-gradient(-45deg, #343a40 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #343a40 75%),
+      linear-gradient(-45deg, transparent 75%, #343a40 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
   }
   
   .cell-floor {
-    @apply bg-[hsl(var(--dungeon-floor))] hover:bg-[hsl(var(--dungeon-floor))]/80;
+    background: #495057;
   }
   
   .cell-treasure {
-    @apply bg-[hsl(var(--dungeon-treasure))] animate-pulse;
+    background: #ffc107;
+    animation: nes-blink 1s infinite;
   }
   
   .cell-portal {
-    @apply bg-[hsl(var(--dungeon-portal))] animate-pulse;
+    background: #6f42c1;
+    animation: nes-blink 1s infinite;
   }
   
   .player-sprite {
-    @apply absolute inset-0 bg-[hsl(var(--dungeon-player))] rounded-sm;
-    animation: player-idle 2s ease-in-out infinite;
+    @apply absolute inset-0 bg-[hsl(var(--nes-success))];
+    animation: player-bounce 0.5s ease-in-out infinite alternate;
   }
   
-  .game-ui {
-    @apply bg-card border border-border rounded-lg p-4 font-mono;
+  .nes-game-ui {
+    @apply nes-container is-dark;
   }
   
-  .pixel-button {
-    @apply bg-primary text-primary-foreground border-2 border-ring px-4 py-2 font-bold;
-    @apply hover:bg-primary/90 transition-colors;
-    image-rendering: pixelated;
+  .nes-stat {
+    @apply text-xs;
+  }
+  
+  .nes-legend-item {
+    @apply flex items-center gap-2 text-xs;
   }
 }
 
-@layer utilities {
-  .pixel-art {
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-  }
+@keyframes player-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-2px); }
 }
 
-@keyframes player-idle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+@keyframes nes-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.7; }
 }

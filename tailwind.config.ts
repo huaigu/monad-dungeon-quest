@@ -19,6 +19,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
+				pixel: ['"Press Start 2P"', 'monospace'],
 				mono: ['JetBrains Mono', 'monospace'],
 			},
 			colors: {

@@ -8,79 +8,88 @@ interface GameUIProps {
 
 export const GameUI = ({ gameState, onReset }: GameUIProps) => {
   return (
-    <div className="game-ui space-y-4">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-game-highlight mb-2">
-          MONAD DUNGEON
-        </h1>
-        <div className="text-sm text-muted-foreground">
-          Collect treasures and find the portal to advance!
+    <div className="space-y-4">
+      {/* Game Title */}
+      <div className="nes-container is-dark with-title">
+        <p className="title text-white">MONAD DUNGEON</p>
+        <div className="text-center">
+          <p className="nes-text is-primary text-sm mb-2">
+            Collect treasures and find portals!
+          </p>
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Level:</span>
-            <span className="text-game-highlight font-bold">
-              {gameState.currentLevel}/10
-            </span>
+      {/* Game Stats */}
+      <div className="nes-container is-dark">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="nes-text">LEVEL:</span>
+              <span className="nes-text is-warning">
+                {gameState.currentLevel}/10
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="nes-text">STEPS:</span>
+              <span className="nes-text is-primary">
+                {gameState.steps}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>Steps:</span>
-            <span className="text-game-warning font-bold">
-              {gameState.steps}
-            </span>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Treasures:</span>
-            <span className="text-game-success font-bold">
-              {gameState.treasuresCollected}/{gameState.totalTreasures}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Status:</span>
-            <span className={`font-bold ${
-              gameState.gameWon 
-                ? 'text-game-success' 
-                : gameState.treasuresCollected === gameState.totalTreasures
-                  ? 'text-accent'
-                  : 'text-muted-foreground'
-            }`}>
-              {gameState.gameWon 
-                ? 'WON!' 
-                : gameState.treasuresCollected === gameState.totalTreasures
-                  ? 'READY!'
-                  : 'EXPLORE'
-              }
-            </span>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="nes-text">TREASURE:</span>
+              <span className="nes-text is-success">
+                {gameState.treasuresCollected}/{gameState.totalTreasures}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="nes-text">STATUS:</span>
+              <span className={`nes-text ${
+                gameState.gameWon 
+                  ? 'is-success' 
+                  : gameState.treasuresCollected === gameState.totalTreasures
+                    ? 'is-warning'
+                    : 'is-disabled'
+              }`}>
+                {gameState.gameWon 
+                  ? 'WON!' 
+                  : gameState.treasuresCollected === gameState.totalTreasures
+                    ? 'READY!'
+                    : 'EXPLORE'
+                }
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="text-xs text-muted-foreground text-center">
-          Controls: WASD or Arrow Keys
+      {/* Controls */}
+      <div className="nes-container is-dark">
+        <div className="text-center space-y-3">
+          <p className="nes-text text-xs">
+            CONTROLS: WASD or ARROW KEYS
+          </p>
+          <button 
+            className="nes-btn is-error"
+            onClick={onReset}
+          >
+            RESET GAME
+          </button>
         </div>
-        <Button 
-          onClick={onReset} 
-          className="pixel-button w-full"
-          variant="secondary"
-        >
-          RESET GAME
-        </Button>
       </div>
 
+      {/* Victory Screen */}
       {gameState.gameWon && (
-        <div className="text-center p-4 bg-game-success/10 border border-game-success rounded">
-          <div className="text-game-success font-bold">
-            🎉 VICTORY! 🎉
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            Completed in {gameState.steps} steps!
+        <div className="nes-container is-dark">
+          <div className="text-center">
+            <p className="nes-text is-success mb-2">
+              🎉 VICTORY! 🎉
+            </p>
+            <p className="nes-text text-xs">
+              Completed in {gameState.steps} steps!
+            </p>
           </div>
         </div>
       )}

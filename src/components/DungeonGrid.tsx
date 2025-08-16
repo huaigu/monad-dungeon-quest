@@ -31,7 +31,7 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
   };
 
   const getCellSymbol = (cell: Cell) => {
-    if (cell.hasPlayer) return '🧙';
+    if (cell.hasPlayer) return '';
     
     switch (cell.type) {
       case 'wall':
@@ -39,27 +39,30 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
       case 'floor':
         return '';
       case 'treasure':
-        return cell.treasureCollected ? '' : '💎';
+        return cell.treasureCollected ? '' : '★';
       case 'portal':
-        return '🌀';
+        return '◉';
       default:
         return '';
     }
   };
 
   return (
-    <div className="dungeon-grid pixel-art">
-      {grid.flat().map((cell, index) => (
-        <div
-          key={index}
-          className={getCellClass(cell)}
-        >
-          {cell.hasPlayer && <div className="player-sprite" />}
-          <div className="absolute inset-0 flex items-center justify-center text-xs">
-            {getCellSymbol(cell)}
+    <div className="nes-container is-dark with-title">
+      <p className="title text-white">DUNGEON LEVEL</p>
+      <div className="dungeon-grid">
+        {grid.flat().map((cell, index) => (
+          <div
+            key={index}
+            className={getCellClass(cell)}
+          >
+            {cell.hasPlayer && <div className="player-sprite" />}
+            <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
+              {getCellSymbol(cell)}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
