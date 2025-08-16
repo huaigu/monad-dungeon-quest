@@ -130,10 +130,9 @@
   }
   
   .dungeon-grid {
-    @apply grid gap-1 p-4 bg-[hsl(var(--dungeon-shadow))] border-4;
+    @apply grid gap-0 p-4 bg-[hsl(var(--dungeon-shadow))];
     grid-template-columns: repeat(10, 1fr);
-    border-style: solid;
-    border-color: #fff;
+    border: 3px solid #fff;
     image-rendering: pixelated;
   }
   
@@ -141,48 +140,60 @@
     @apply relative overflow-hidden;
     width: 32px;
     height: 32px;
-    border: 2px solid #fff;
-    background: #212529;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #495057;
   }
   
   .cell-wall {
-    background: #212529;
+    background: #343a40;
     position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .cell-wall::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 2px;
+    left: 2px;
+    right: 6px;
+    bottom: 6px;
+    background: linear-gradient(135deg, #495057 0%, #343a40 50%, #212529 100%);
+    border-radius: 1px;
+  }
+  
+  .cell-wall::after {
+    content: "";
+    position: absolute;
     bottom: 0;
-    background-image: 
-      linear-gradient(45deg, #343a40 25%, transparent 25%),
-      linear-gradient(-45deg, #343a40 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #343a40 75%),
-      linear-gradient(-45deg, transparent 75%, #343a40 75%);
-    background-size: 8px 8px;
-    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    right: 0;
+    width: 4px;
+    height: 4px;
+    background: #212529;
+    border-radius: 1px;
   }
   
   .cell-floor {
     background: #495057;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .cell-treasure {
-    background: #ffc107;
-    animation: nes-blink 1s infinite;
+    background: linear-gradient(45deg, #ffc107, #ffeb3b);
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    animation: treasure-glow 1.5s ease-in-out infinite alternate;
   }
   
   .cell-portal {
-    background: #6f42c1;
-    animation: nes-blink 1s infinite;
+    background: linear-gradient(45deg, #6f42c1, #9c27b0);
+    border: 1px solid rgba(111, 66, 193, 0.5);
+    animation: portal-pulse 2s ease-in-out infinite;
   }
   
   .player-sprite {
-    @apply absolute inset-0 bg-[hsl(var(--nes-success))];
-    animation: player-bounce 0.5s ease-in-out infinite alternate;
+    @apply absolute inset-1 bg-[hsl(var(--nes-success))];
+    animation: player-bounce 0.8s ease-in-out infinite alternate;
+    border-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
   
   .nes-game-ui {
@@ -199,11 +210,22 @@
 }
 
 @keyframes player-bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-2px); }
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-2px) scale(1.05); }
 }
 
-@keyframes nes-blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.7; }
+@keyframes treasure-glow {
+  0% { box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
+  100% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.8), 0 0 25px rgba(255, 193, 7, 0.4); }
+}
+
+@keyframes portal-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(111, 66, 193, 0.5);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(111, 66, 193, 0.8), 0 0 30px rgba(111, 66, 193, 0.4);
+    transform: scale(1.02);
+  }
 }

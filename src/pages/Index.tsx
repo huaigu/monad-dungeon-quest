@@ -29,19 +29,23 @@ const Index = () => {
               <p className="title text-white">LEGEND</p>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="nes-legend-item">
-                  <div className="w-4 h-4 bg-green-400 border-2 border-white"></div>
+                  <div className="w-4 h-4 bg-green-400 border border-white rounded-sm"></div>
                   <span className="nes-text">Player</span>
                 </div>
                 <div className="nes-legend-item">
-                  <span className="text-yellow-400 font-bold">★</span>
+                  <div className="w-4 h-4 bg-gradient-to-br from-yellow-300 to-yellow-500 border border-yellow-400 rounded-sm flex items-center justify-center">
+                    <span className="text-xs">◆</span>
+                  </div>
                   <span className="nes-text">Treasure</span>
                 </div>
                 <div className="nes-legend-item">
-                  <span className="text-purple-400 font-bold">◉</span>
+                  <div className="w-4 h-4 bg-gradient-to-br from-purple-400 to-purple-600 border border-purple-400 rounded-sm flex items-center justify-center">
+                    <span className="text-xs text-white">⌂</span>
+                  </div>
                   <span className="nes-text">Portal</span>
                 </div>
                 <div className="nes-legend-item">
-                  <span className="text-gray-600 font-bold">█</span>
+                  <div className="w-4 h-4 bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-500 rounded-sm"></div>
                   <span className="nes-text">Wall</span>
                 </div>
               </div>

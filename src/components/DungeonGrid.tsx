@@ -1,4 +1,5 @@
 import { Cell } from '@/types/game';
+import { DiamondIcon, PortalIcon, PlayerIcon } from '@/components/GameIcons';
 
 interface DungeonGridProps {
   grid: Cell[][];
@@ -30,20 +31,21 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
     return baseClass;
   };
 
-  const getCellSymbol = (cell: Cell) => {
-    if (cell.hasPlayer) return '';
+  const getCellContent = (cell: Cell) => {
+    if (cell.hasPlayer) {
+      return <PlayerIcon className="text-white" size={20} />;
+    }
     
     switch (cell.type) {
-      case 'wall':
-        return '█';
-      case 'floor':
-        return '';
       case 'treasure':
-        return cell.treasureCollected ? '' : '★';
+        if (!cell.treasureCollected) {
+          return <DiamondIcon className="text-yellow-100" size={18} />;
+        }
+        return null;
       case 'portal':
-        return '◉';
+        return <PortalIcon className="text-purple-100" size={20} />;
       default:
-        return '';
+        return null;
     }
   };
 
@@ -56,9 +58,8 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
             key={index}
             className={getCellClass(cell)}
           >
-            {cell.hasPlayer && <div className="player-sprite" />}
-            <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
-              {getCellSymbol(cell)}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {getCellContent(cell)}
             </div>
           </div>
         ))}
