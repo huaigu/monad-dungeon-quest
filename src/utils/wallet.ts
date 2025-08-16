@@ -96,14 +96,24 @@ export function loadWalletFromStorage(): {
   mnemonic: string;
 } | null {
   try {
+    console.log('loadWalletFromStorage: Checking localStorage...');
+    console.log('Storage keys:', WALLET_STORAGE_KEYS);
+    
     const address = localStorage.getItem(WALLET_STORAGE_KEYS.ADDRESS);
     const privateKey = localStorage.getItem(WALLET_STORAGE_KEYS.PRIVATE_KEY);
     const mnemonic = localStorage.getItem(WALLET_STORAGE_KEYS.MNEMONIC);
 
+    console.log('loadWalletFromStorage: Found in storage:');
+    console.log('  address:', address);
+    console.log('  privateKey:', privateKey ? '[EXISTS]' : '[NOT FOUND]');
+    console.log('  mnemonic:', mnemonic ? '[EXISTS]' : '[NOT FOUND]');
+
     if (!address || !privateKey || !mnemonic) {
+      console.log('loadWalletFromStorage: Missing wallet data, returning null');
       return null;
     }
 
+    console.log('loadWalletFromStorage: All wallet data found, returning wallet info');
     return {
       address,
       privateKey,
@@ -132,21 +142,28 @@ export function clearWalletFromStorage(): void {
  * 获取钱包余额
  */
 export async function getWalletBalance(address: string): Promise<string> {
+  console.log('getWalletBalance: Starting balance query for address:', address);
   try {
     // 在开发环境中，如果无法连接到网络，返回模拟余额
     if (import.meta.env.DEV) {
+      console.log('getWalletBalance: In DEV mode, trying to connect to Monad Testnet');
       // 尝试连接，如果失败则返回模拟余额
       try {
         const provider = new ethers.JsonRpcProvider(MONAD_TESTNET_CONFIG.rpcUrl);
+        console.log('getWalletBalance: Created provider, querying balance...');
         const balance = await Promise.race([
           provider.getBalance(address),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
         ]);
-        return ethers.formatEther(balance as bigint);
+        const formattedBalance = ethers.formatEther(balance as bigint);
+        console.log('getWalletBalance: Real balance from network:', formattedBalance);
+        return formattedBalance;
       } catch (error) {
-        console.warn('无法连接到 Monad Testnet，使用模拟余额:', error);
+        console.warn('getWalletBalance: 无法连接到 Monad Testnet，使用模拟余额:', error);
         // 返回足够的模拟余额用于开发测试
-        return '1.0';
+        const mockBalance = '1.0';
+        console.log('getWalletBalance: Using mock balance:', mockBalance);
+        return mockBalance;
       }
     }
     

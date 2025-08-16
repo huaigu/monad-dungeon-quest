@@ -28,7 +28,28 @@ const BALANCE_REFRESH_INTERVAL = 10000; // 10秒刷新一次余额
 const MIN_BALANCE_FOR_GAME = '0.01'; // 最小游戏余额 0.01 MON
 
 export function useWallet(): WalletState & WalletActions & { walletStatus: WalletStatus } {
-  const [state, setState] = useState<WalletState>(INITIAL_STATE);
+  // 同步初始化钱包状态，避免异步导致的时序问题
+  const initializeWalletState = useCallback((): WalletState => {
+    console.log('initializeWalletState: Synchronously loading wallet...');
+    const walletInfo = loadWalletFromStorage();
+    
+    if (walletInfo) {
+      console.log('initializeWalletState: Found wallet in storage, setting connected state');
+      return {
+        isConnected: true,
+        isLoading: false,
+        address: walletInfo.address,
+        balance: '0', // 余额稍后异步更新
+        hasMinimumBalance: false, // 余额加载后更新
+        error: null,
+      };
+    } else {
+      console.log('initializeWalletState: No wallet found, using initial state');
+      return INITIAL_STATE;
+    }
+  }, []);
+
+  const [state, setState] = useState<WalletState>(() => initializeWalletState());
 
   // 刷新余额
   const refreshBalance = useCallback(async () => {
@@ -41,6 +62,10 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
     try {
       const balance = await getWalletBalance(state.address);
       const hasMinBalance = hasEnoughBalance(balance, MIN_BALANCE_FOR_GAME);
+
+      console.log('refreshBalance: Got balance:', balance);
+      console.log('refreshBalance: MIN_BALANCE_FOR_GAME:', MIN_BALANCE_FOR_GAME);
+      console.log('refreshBalance: hasMinBalance:', hasMinBalance);
 
       setState(prev => ({
         ...prev,
@@ -96,12 +121,15 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
 
   // 加载钱包
   const loadWallet = useCallback((): WalletInfo | null => {
+    console.log('loadWallet: Starting to load wallet from storage');
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const walletInfo = loadWalletFromStorage();
+      console.log('loadWallet: Wallet info from storage:', walletInfo);
       
       if (walletInfo) {
+        console.log('loadWallet: Found wallet, setting connected state');
         setState(prev => ({
           ...prev,
           isConnected: true,
@@ -112,9 +140,11 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
 
         // 立即刷新余额
         setTimeout(() => {
+          console.log('loadWallet: Triggering balance refresh');
           refreshBalance();
         }, 100);
       } else {
+        console.log('loadWallet: No wallet found in storage');
         setState(prev => ({
           ...prev,
           isLoading: false,
@@ -159,11 +189,25 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
     return 'connected';
   })();
 
+  // 添加调试日志
+  console.log('=== useWallet Debug Info ===');
+  console.log('State:', state);
+  console.log('Calculated walletStatus:', walletStatus);
+  console.log('isConnected:', state.isConnected);
+  console.log('address:', state.address);
+  console.log('balance:', state.balance);
+  console.log('hasMinimumBalance:', state.hasMinimumBalance);
+  console.log('===============================');
+
   // 初始化和定时刷新
   useEffect(() => {
-    // 页面加载时尝试加载已存在的钱包
-    loadWallet();
-  }, [loadWallet]);
+    console.log('useWallet: Initial effect - checking if wallet is already loaded');
+    // 如果钱包已经连接但余额还没有加载，立即刷新余额
+    if (state.isConnected && state.address && state.balance === '0') {
+      console.log('useWallet: Wallet connected but balance not loaded, refreshing...');
+      refreshBalance();
+    }
+  }, [state.isConnected, state.address, state.balance, refreshBalance]); // 添加正确的依赖
 
   useEffect(() => {
     // 如果有钱包地址，开始定时刷新余额

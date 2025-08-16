@@ -15,35 +15,55 @@ const Index = () => {
   const wallet = useWallet();
   const navigate = useNavigate();
 
+  // 添加详细的调试日志
+  console.log('=== Index.tsx Debug Info ===');
+  console.log('Wallet isConnected:', wallet.isConnected);
+  console.log('Wallet walletStatus:', wallet.walletStatus);
+  console.log('Wallet hasMinimumBalance:', wallet.hasMinimumBalance);
+  console.log('Wallet balance:', wallet.balance);
+  console.log('Wallet address:', wallet.address);
+  console.log('Wallet loading:', wallet.isLoading);
+  console.log('Wallet error:', wallet.error);
+
   // 检查钱包状态，如果不满足游戏条件则重定向到主页
   useEffect(() => {
-    // 在开发环境下，只要有钱包连接就允许进入游戏
-    if (import.meta.env.DEV) {
-      if (!wallet.isConnected) {
-        navigate('/');
-      }
-    } else {
-      // 生产环境需要满足余额要求
-      if (!wallet.isConnected || !wallet.hasMinimumBalance) {
-        navigate('/');
-      }
+    console.log('=== useEffect Wallet Check ===');
+    console.log('wallet.isConnected:', wallet.isConnected);
+    console.log('wallet.hasMinimumBalance:', wallet.hasMinimumBalance);
+    console.log('wallet.isLoading:', wallet.isLoading);
+    console.log('wallet.balance:', wallet.balance);
+    
+    // 如果钱包还在加载中，等待加载完成
+    if (wallet.isLoading) {
+      console.log('⏳ Wallet is loading, waiting...');
+      return;
     }
-  }, [wallet.isConnected, wallet.hasMinimumBalance, navigate]);
+    
+    // 如果钱包已连接但余额为0，给一些时间让余额加载
+    if (wallet.isConnected && wallet.balance === '0') {
+      console.log('⏳ Wallet connected but balance is 0, waiting for balance to load...');
+      return;
+    }
+    
+    // 统一使用burner wallet流程，只检查余额是否满足要求
+    if (!wallet.isConnected || !wallet.hasMinimumBalance) {
+      console.log('❌ Wallet conditions not met, redirecting to /');
+      console.log('  - isConnected:', wallet.isConnected);
+      console.log('  - hasMinimumBalance:', wallet.hasMinimumBalance);
+      navigate('/');
+    } else {
+      console.log('✅ Wallet conditions met, staying on game page');
+    }
+  }, [wallet.isConnected, wallet.hasMinimumBalance, wallet.isLoading, wallet.balance, navigate]);
 
   useKeyboard({
     onMove: movePlayer,
     onActivatePortal: activatePortal,
-    enabled: !gameState.gameWon && (
-      import.meta.env.DEV 
-        ? wallet.isConnected 
-        : wallet.walletStatus === 'ready'
-    ),
+    enabled: !gameState.gameWon && wallet.walletStatus === 'ready',
   });
 
   // 如果钱包状态不满足游戏条件，显示警告
-  const shouldShowWarning = import.meta.env.DEV 
-    ? !wallet.isConnected 
-    : (!wallet.isConnected || !wallet.hasMinimumBalance);
+  const shouldShowWarning = !wallet.isConnected || !wallet.hasMinimumBalance;
     
   if (shouldShowWarning) {
     return (
