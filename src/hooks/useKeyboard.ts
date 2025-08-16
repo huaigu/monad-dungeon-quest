@@ -4,16 +4,17 @@ type Direction = 'up' | 'down' | 'left' | 'right';
 
 interface UseKeyboardProps {
   onMove: (direction: Direction) => void;
+  onActivatePortal?: () => void;
   enabled?: boolean;
 }
 
-export const useKeyboard = ({ onMove, enabled = true }: UseKeyboardProps) => {
+export const useKeyboard = ({ onMove, onActivatePortal, enabled = true }: UseKeyboardProps) => {
   useEffect(() => {
     if (!enabled) return;
 
     const handleKeyPress = (event: KeyboardEvent) => {
       // Prevent default behavior for game keys
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(event.key)) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', ' '].includes(event.key)) {
         event.preventDefault();
       }
 
@@ -34,10 +35,15 @@ export const useKeyboard = ({ onMove, enabled = true }: UseKeyboardProps) => {
         case 'd':
           onMove('right');
           break;
+        case ' ':
+          if (onActivatePortal) {
+            onActivatePortal();
+          }
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [onMove, enabled]);
+  }, [onMove, onActivatePortal, enabled]);
 };

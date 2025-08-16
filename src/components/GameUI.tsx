@@ -45,18 +45,33 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
               </span>
             </div>
             <div className="flex justify-between items-center">
+              <span className="nes-text">宝箱:</span>
+              <span className="nes-text is-warning">
+                {gameState.chestsCollected}/{gameState.totalChests}
+              </span>
+            </div>
+          </div>
+          
+          <div className="col-span-2 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="nes-text">钻石:</span>
+              <span className="nes-text is-primary">
+                {gameState.totalDiamonds}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
               <span className="nes-text">状态:</span>
               <span className={`nes-text ${
                 gameState.gameWon 
                   ? 'is-success' 
-                  : gameState.treasuresCollected === gameState.totalTreasures
+                  : gameState.isOnPortal
                     ? 'is-warning'
                     : 'is-disabled'
               }`}>
                 {gameState.gameWon 
                   ? '胜利!' 
-                  : gameState.treasuresCollected === gameState.totalTreasures
-                    ? '就绪!'
+                  : gameState.isOnPortal
+                    ? '按空格进入'
                     : '探索中'
                 }
               </span>
@@ -69,7 +84,7 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
       <div className="nes-container is-dark">
         <div className="text-center space-y-3">
           <p className="nes-text text-xs">
-            操作: WASD 或方向键
+            操作: WASD/方向键移动，空格激活传送门
           </p>
           <button 
             className="nes-btn is-error"
@@ -89,6 +104,9 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
             </p>
             <p className="nes-text text-xs">
               用时 {gameState.steps} 步完成!
+            </p>
+            <p className="nes-text text-xs">
+              总钻石: {gameState.totalDiamonds}颗
             </p>
           </div>
         </div>

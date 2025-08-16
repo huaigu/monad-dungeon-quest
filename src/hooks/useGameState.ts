@@ -1,33 +1,68 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GameState, Player, Cell, CellType } from '@/types/game';
-import { generateLevel } from '@/utils/levelGenerator';
+import { GameState, Player, Cell, CellType, DungeonLevel } from '@/types/game';
+import { getLevelData, convertGridToCells, calculateLevelDiamonds } from '@/utils/dungeonLoader';
 import { toast } from 'sonner';
 
 const GRID_SIZE = 10;
 const MAX_LEVELS = 10;
 
 export const useGameState = () => {
-  const [gameState, setGameState] = useState<GameState>(() => {
-    const level = generateLevel(1);
-    return {
-      currentLevel: 1,
-      player: level.playerStart,
-      steps: 0,
-      treasuresCollected: 0,
-      totalTreasures: level.treasureCount,
-      dungeonGrid: level.grid.map((row, y) =>
-        row.map((cellType, x) => ({
-          type: cellType,
-          x,
-          y,
-          hasPlayer: x === level.playerStart.x && y === level.playerStart.y,
-          treasureCollected: false,
-        }))
-      ),
-      gameWon: false,
-      isMoving: false,
-    };
+  const [gameState, setGameState] = useState<GameState>({
+    currentLevel: 1,
+    player: { x: 1, y: 1 }, // 临时值，会被异步加载的数据覆盖
+    steps: 0,
+    treasuresCollected: 0,
+    totalTreasures: 0,
+    chestsCollected: 0,
+    totalChests: 0,
+    totalDiamonds: 0,
+    dungeonGrid: [],
+    gameWon: false,
+    isMoving: false,
+    isOnPortal: false,
   });
+
+  const [currentLevelData, setCurrentLevelData] = useState<DungeonLevel | null>(null);
+
+  // 加载关卡数据的函数
+  const loadLevel = useCallback(async (levelNumber: number) => {
+    try {
+      const levelData = await getLevelData(levelNumber);
+      if (!levelData) {
+        toast.error(`无法加载第 ${levelNumber} 关数据`);
+        return;
+      }
+
+      setCurrentLevelData(levelData);
+
+      const dungeonGrid = convertGridToCells(
+        levelData.grid,
+        GRID_SIZE,
+        levelData.playerStart,
+        levelData.treasures,
+        levelData.chests
+      );
+
+      setGameState(prev => ({
+        ...prev,
+        currentLevel: levelNumber,
+        player: levelData.playerStart,
+        totalTreasures: levelData.treasureCount,
+        totalChests: levelData.chestCount,
+        treasuresCollected: 0,
+        chestsCollected: 0,
+        dungeonGrid,
+      }));
+    } catch (error) {
+      toast.error('加载关卡数据失败');
+      console.error('Error loading level data:', error);
+    }
+  }, []);
+
+  // 初始化第一关
+  useEffect(() => {
+    loadLevel(1);
+  }, [loadLevel]);
 
   const movePlayer = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (gameState.isMoving || gameState.gameWon) return;
@@ -66,56 +101,40 @@ export const useGameState = () => {
       );
 
       let newTreasuresCollected = prev.treasuresCollected;
-      let newSteps = prev.steps + 1;
+      let newChestsCollected = prev.chestsCollected;
+      let newTotalDiamonds = prev.totalDiamonds;
+      const newSteps = prev.steps + 1;
       
       // Collect treasure
       if (targetCell.type === 'treasure' && !targetCell.treasureCollected) {
         newGrid[newPlayer.y][newPlayer.x].treasureCollected = true;
         newTreasuresCollected++;
-        toast.success(`宝物收集! (${newTreasuresCollected}/${prev.totalTreasures})`);
+        
+        // 宝物固定获得1颗钻石
+        newTotalDiamonds += 1;
+        toast.success(`宝物收集! +1颗钻石 (${newTreasuresCollected}/${prev.totalTreasures})`);
       }
 
-      // Check portal
-      if (targetCell.type === 'portal') {
-        if (newTreasuresCollected === prev.totalTreasures) {
-          // Can advance to next level
-          const nextLevel = prev.currentLevel + 1;
-          if (nextLevel > MAX_LEVELS) {
-            toast.success("🎉 恭喜! 你完成了魔纳地牢!");
-            return {
-              ...prev,
-              gameWon: true,
-              player: newPlayer,
-              steps: newSteps,
-              treasuresCollected: newTreasuresCollected,
-              dungeonGrid: newGrid,
-            };
-          } else {
-            // Generate next level
-            const level = generateLevel(nextLevel);
-            toast.success(`第 ${nextLevel} 层解锁!`);
-            return {
-              currentLevel: nextLevel,
-              player: level.playerStart,
-              steps: newSteps,
-              treasuresCollected: 0,
-              totalTreasures: level.treasureCount,
-              dungeonGrid: level.grid.map((row, y) =>
-                row.map((cellType, x) => ({
-                  type: cellType,
-                  x,
-                  y,
-                  hasPlayer: x === level.playerStart.x && y === level.playerStart.y,
-                  treasureCollected: false,
-                }))
-              ),
-              gameWon: false,
-              isMoving: false,
-            };
+      // Collect chest
+      if (targetCell.type === 'chest' && !targetCell.chestCollected) {
+        newGrid[newPlayer.y][newPlayer.x].chestCollected = true;
+        newChestsCollected++;
+        
+        // 从当前关卡数据中找到对应宝箱的钻石数
+        if (currentLevelData) {
+          const chest = currentLevelData.chests.find(c => c.x === newPlayer.x && c.y === newPlayer.y);
+          if (chest) {
+            const diamonds = chest.score; // 使用score作为钻石数量
+            newTotalDiamonds += diamonds;
+            toast.success(`宝箱开启! +${diamonds}颗钻石 (${newChestsCollected}/${prev.totalChests})`);
           }
-        } else {
-          toast.warning(`请先收集所有宝物! (${newTreasuresCollected}/${prev.totalTreasures})`);
         }
+      }
+
+      // Check if on portal
+      const isOnPortal = targetCell.type === 'portal';
+      if (isOnPortal && !prev.isOnPortal) {
+        toast.info("按空格键进入传送门");
       }
 
       return {
@@ -123,37 +142,48 @@ export const useGameState = () => {
         player: newPlayer,
         steps: newSteps,
         treasuresCollected: newTreasuresCollected,
+        chestsCollected: newChestsCollected,
+        totalDiamonds: newTotalDiamonds,
         dungeonGrid: newGrid,
+        isOnPortal,
       };
     });
-  }, [gameState.isMoving, gameState.gameWon]);
+  }, [gameState.isMoving, gameState.gameWon, currentLevelData]);
+
+  const activatePortal = useCallback(() => {
+    if (!gameState.isOnPortal || gameState.gameWon) return;
+
+    const nextLevel = gameState.currentLevel + 1;
+    if (nextLevel > MAX_LEVELS) {
+      toast.success("🎉 恭喜! 你完成了魔纳地牢!");
+      setGameState(prev => ({
+        ...prev,
+        gameWon: true,
+      }));
+    } else {
+      toast.success(`第 ${nextLevel} 层解锁!`);
+      setTimeout(() => loadLevel(nextLevel), 100);
+    }
+  }, [gameState.isOnPortal, gameState.gameWon, gameState.currentLevel, loadLevel]);
 
   const resetGame = useCallback(() => {
-    const level = generateLevel(1);
-    setGameState({
-      currentLevel: 1,
-      player: level.playerStart,
+    setGameState(prev => ({
+      ...prev,
       steps: 0,
       treasuresCollected: 0,
-      totalTreasures: level.treasureCount,
-      dungeonGrid: level.grid.map((row, y) =>
-        row.map((cellType, x) => ({
-          type: cellType,
-          x,
-          y,
-          hasPlayer: x === level.playerStart.x && y === level.playerStart.y,
-          treasureCollected: false,
-        }))
-      ),
+      chestsCollected: 0,
       gameWon: false,
       isMoving: false,
-    });
+      isOnPortal: false,
+    }));
+    loadLevel(1);
     toast.success("游戏重置!");
-  }, []);
+  }, [loadLevel]);
 
   return {
     gameState,
     movePlayer,
     resetGame,
+    activatePortal,
   };
 };

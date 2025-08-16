@@ -4,10 +4,11 @@ import { useGameState } from '@/hooks/useGameState';
 import { useKeyboard } from '@/hooks/useKeyboard';
 
 const Index = () => {
-  const { gameState, movePlayer, resetGame } = useGameState();
+  const { gameState, movePlayer, resetGame, activatePortal } = useGameState();
 
   useKeyboard({
     onMove: movePlayer,
+    onActivatePortal: activatePortal,
     enabled: !gameState.gameWon,
   });
 
@@ -45,6 +46,12 @@ const Index = () => {
                   <span className="nes-text">传送门</span>
                 </div>
                 <div className="nes-legend-item">
+                  <div className="w-4 h-4 bg-gradient-to-br from-amber-600 to-amber-800 border border-amber-500 rounded-sm flex items-center justify-center">
+                    <span className="text-xs text-white">📦</span>
+                  </div>
+                  <span className="nes-text">宝箱</span>
+                </div>
+                <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-500 rounded-sm"></div>
                   <span className="nes-text">墙壁</span>
                 </div>
@@ -56,8 +63,8 @@ const Index = () => {
               <p className="title text-white">游戏说明</p>
               <ul className="text-xs space-y-1">
                 <li className="nes-text">• 使用 WASD 或方向键移动</li>
-                <li className="nes-text">• 收集每层的所有宝物</li>
-                <li className="nes-text">• 找到传送门进入下一层</li>
+                <li className="nes-text">• 收集宝物和宝箱获得钻石</li>
+                <li className="nes-text">• 站在传送门上按空格进入下一层</li>
                 <li className="nes-text">• 完成全部10层获得胜利!</li>
               </ul>
             </div>

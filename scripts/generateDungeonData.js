@@ -10,17 +10,32 @@ const __dirname = path.dirname(__filename);
 // 常量定义
 const GRID_SIZE = 10;
 const TOTAL_LEVELS = 10;
-const MIN_TREASURES = 3;
-const MAX_TREASURES = 4;
+const MIN_TREASURES = 2;
+const MAX_TREASURES = 3;
+const MIN_CHESTS = 1;
+const MAX_CHESTS = 2;
+
+// 钻石设置
+const TREASURE_DIAMONDS = 1;  // 宝物固定钻石数
+const MIN_CHEST_DIAMONDS = 0; // 宝箱最小钻石数
+const MAX_CHEST_DIAMONDS = 10; // 宝箱最大钻石数
 
 // 数字编码
 const CELL_TYPES = {
   FLOOR: 0,      // 可移动地块
   WALL: 1,       // 墙壁
-  TREASURE: 2,   // 钻石/宝物
+  TREASURE: 2,   // 钻石/宝物 (固定1颗钻石)
   PORTAL: 3,     // 传送门
-  PLAYER: 4      // 人物初始位置
+  PLAYER: 4,     // 人物初始位置
+  CHEST: 5       // 宝箱 (随机0-10颗钻石)
 };
+
+/**
+ * 生成随机宝箱钻石数
+ */
+function generateChestDiamonds() {
+  return Math.floor(Math.random() * (MAX_CHEST_DIAMONDS - MIN_CHEST_DIAMONDS + 1)) + MIN_CHEST_DIAMONDS;
+}
 
 /**
  * 创建一个填满墙壁的网格
@@ -81,7 +96,7 @@ function isReachable(grid, start, target) {
 /**
  * 检查所有重要位置之间的可达性
  */
-function validateReachability(grid, playerStart, treasures, portal) {
+function validateReachability(grid, playerStart, treasures, chests, portal) {
   // 检查玩家起始位置到传送门的可达性
   if (!isReachable(grid, playerStart, portal)) {
     return false;
@@ -90,6 +105,13 @@ function validateReachability(grid, playerStart, treasures, portal) {
   // 检查玩家起始位置到所有宝物的可达性
   for (const treasure of treasures) {
     if (!isReachable(grid, playerStart, treasure)) {
+      return false;
+    }
+  }
+
+  // 检查玩家起始位置到所有宝箱的可达性
+  for (const chest of chests) {
+    if (!isReachable(grid, playerStart, chest.position)) {
       return false;
     }
   }
@@ -211,14 +233,35 @@ function generateLevel(levelNumber) {
       continue; // 重新生成
     }
 
+    // 放置宝箱
+    const chestCount = MIN_CHESTS + Math.floor(Math.random() * (MAX_CHESTS - MIN_CHESTS + 1));
+    const chests = [];
+    
+    // 宝箱从剩余可用位置中选择
+    if (availablePositions.length >= chestCount) {
+      for (let i = 0; i < chestCount; i++) {
+        const randomIndex = Math.floor(Math.random() * availablePositions.length);
+        const [x, y] = availablePositions.splice(randomIndex, 1)[0];
+        chests.push({
+          position: [x, y],
+          score: generateChestDiamonds()
+        });
+      }
+    }
+
     // 验证可达性
-    if (validateReachability(grid, playerStart, treasures, portal)) {
+    if (validateReachability(grid, playerStart, treasures, chests, portal)) {
       // 在网格中标记特殊位置
       grid[playerStart[1]][playerStart[0]] = CELL_TYPES.PLAYER;
       grid[portal[1]][portal[0]] = CELL_TYPES.PORTAL;
       
       for (const [x, y] of treasures) {
         grid[y][x] = CELL_TYPES.TREASURE;
+      }
+      
+      for (const chest of chests) {
+        const [x, y] = chest.position;
+        grid[y][x] = CELL_TYPES.CHEST;
       }
 
       // 转换为一维数组
@@ -234,8 +277,14 @@ function generateLevel(levelNumber) {
         grid: flatGrid,
         playerStart: { x: playerStart[0], y: playerStart[1] },
         portal: { x: portal[0], y: portal[1] },
-        treasures: treasures.map(([x, y]) => ({ x, y })),
-        treasureCount: treasureCount
+        treasures: treasures.map(([x, y]) => ({ x, y, score: TREASURE_DIAMONDS })),
+        treasureCount: treasureCount,
+        chests: chests.map(chest => ({
+          x: chest.position[0],
+          y: chest.position[1],
+          score: chest.score
+        })),
+        chestCount: chestCount
       };
     }
   }
@@ -258,7 +307,15 @@ function generateAllLevels() {
         wall: CELL_TYPES.WALL,
         treasure: CELL_TYPES.TREASURE,
         portal: CELL_TYPES.PORTAL,
-        player: CELL_TYPES.PLAYER
+        player: CELL_TYPES.PLAYER,
+        chest: CELL_TYPES.CHEST
+      },
+      rewards: {
+        treasureDiamonds: TREASURE_DIAMONDS,
+        chestDiamondsRange: {
+          min: MIN_CHEST_DIAMONDS,
+          max: MAX_CHEST_DIAMONDS
+        }
       },
       generated: new Date().toISOString()
     },
@@ -270,7 +327,7 @@ function generateAllLevels() {
     try {
       const levelData = generateLevel(i);
       dungeonData.levels.push(levelData);
-      console.log(`第 ${i} 关生成成功 (宝物数量: ${levelData.treasureCount})`);
+      console.log(`第 ${i} 关生成成功 (宝物: ${levelData.treasureCount}个, 宝箱: ${levelData.chestCount}个)`);
     } catch (error) {
       console.error(`第 ${i} 关生成失败:`, error.message);
       process.exit(1);
@@ -305,7 +362,8 @@ function main() {
     // 显示统计信息
     console.log('\n📈 关卡统计:');
     dungeonData.levels.forEach(level => {
-      console.log(`   第${level.level}关: ${level.treasureCount}个宝物`);
+      const chestDiamonds = level.chests.map(c => c.score).join(', ');
+      console.log(`   第${level.level}关: ${level.treasureCount}个宝物(${TREASURE_DIAMONDS}颗钻石), ${level.chestCount}个宝箱(${chestDiamonds}颗钻石)`);
     });
     
   } catch (error) {
