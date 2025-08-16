@@ -80,21 +80,6 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="nes-container is-dark">
-        <div className="text-center space-y-3">
-          <p className="nes-text text-xs">
-            操作: WASD/方向键移动，空格激活传送门
-          </p>
-          <button 
-            className="nes-btn is-error"
-            onClick={onReset}
-          >
-            重新开始
-          </button>
-        </div>
-      </div>
-
       {/* Victory Screen */}
       {gameState.gameWon && (
         <div className="nes-container is-dark">

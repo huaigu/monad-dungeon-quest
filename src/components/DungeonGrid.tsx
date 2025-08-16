@@ -1,11 +1,12 @@
-import { Cell } from '@/types/game';
+import { Cell, GameState } from '@/types/game';
 import { DiamondIcon } from '@/components/GameIcons';
 
 interface DungeonGridProps {
   grid: Cell[][];
+  gameState: GameState;
 }
 
-export const DungeonGrid = ({ grid }: DungeonGridProps) => {
+export const DungeonGrid = ({ grid, gameState }: DungeonGridProps) => {
   const getCellClass = (cell: Cell) => {
     let baseClass = 'dungeon-cell ';
     
@@ -44,7 +45,7 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
         <img 
           src="/images/avatar.png" 
           alt="玩家头像" 
-          className="w-6 h-6 object-contain"
+          className="w-8 h-8 object-contain"
         />
       );
     }
@@ -52,14 +53,14 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
     switch (cell.type) {
       case 'treasure':
         if (!cell.treasureCollected) {
-          return <DiamondIcon className="text-yellow-100" size={18} />;
+          return <DiamondIcon className="text-yellow-100" size={24} />;
         }
         return null;
       case 'portal':
-        return <span className="text-xs text-white">⌂</span>;
+        return <span className="text-lg text-white">⌂</span>;
       case 'chest':
         if (!cell.chestCollected) {
-          return <span className="text-xs text-white">📦</span>;
+          return <span className="text-lg text-white">📦</span>;
         }
         return null;
       default:
@@ -69,7 +70,7 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
 
   return (
     <div className="nes-container is-dark with-title">
-      <p className="title text-white">地牢层数</p>
+      <p className="title text-white">第 {gameState.currentLevel} 层</p>
       <div className="dungeon-grid">
         {grid.flat().map((cell, index) => (
           <div

@@ -13,60 +13,51 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
-          {/* Game Grid */}
-          <div className="flex justify-center">
-            <DungeonGrid grid={gameState.dungeonGrid} />
+    <div className="min-h-screen bg-background p-2">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid xl:grid-cols-3 gap-4 items-start">
+          {/* Game Grid - Takes 2/3 of the space */}
+          <div className="xl:col-span-2 flex justify-center">
+            <DungeonGrid grid={gameState.dungeonGrid} gameState={gameState} />
           </div>
           
-          {/* Game UI */}
-          <div className="space-y-4">
+          {/* Game UI - Takes 1/3 of the space */}
+          <div className="space-y-3">
             <GameUI gameState={gameState} onReset={resetGame} />
             
             {/* Legend */}
             <div className="nes-container is-dark with-title">
               <p className="title text-white">图例</p>
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="nes-legend-item">
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-green-400 border border-white rounded-sm"></div>
                   <span className="nes-text">玩家</span>
-                </div>
-                <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-gradient-to-br from-yellow-300 to-yellow-500 border border-yellow-400 rounded-sm flex items-center justify-center">
                     <span className="text-xs">◆</span>
                   </div>
                   <span className="nes-text">宝物</span>
                 </div>
-                <div className="nes-legend-item">
+                <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-gradient-to-br from-purple-400 to-purple-600 border border-purple-400 rounded-sm flex items-center justify-center">
                     <span className="text-xs text-white">⌂</span>
                   </div>
                   <span className="nes-text">传送门</span>
-                </div>
-                <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-gradient-to-br from-amber-600 to-amber-800 border border-amber-500 rounded-sm flex items-center justify-center">
                     <span className="text-xs text-white">📦</span>
                   </div>
                   <span className="nes-text">宝箱</span>
-                </div>
-                <div className="nes-legend-item">
-                  <div className="w-4 h-4 bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-500 rounded-sm"></div>
-                  <span className="nes-text">墙壁</span>
                 </div>
               </div>
             </div>
             
             {/* Instructions */}
             <div className="nes-container is-dark with-title">
-              <p className="title text-white">游戏说明</p>
-              <ul className="text-xs space-y-1">
-                <li className="nes-text">• 使用 WASD 或方向键移动</li>
-                <li className="nes-text">• 收集宝物和宝箱获得钻石</li>
-                <li className="nes-text">• 站在传送门上按空格进入下一层</li>
-                <li className="nes-text">• 完成全部10层获得胜利!</li>
-              </ul>
+              <p className="title text-white">操作说明</p>
+              <div className="text-xs space-y-1">
+                <p className="nes-text">移动: WASD/方向键</p>
+                <p className="nes-text">传送: 空格键</p>
+                <p className="nes-text">目标: 完成10层获胜</p>
+              </div>
             </div>
           </div>
         </div>
