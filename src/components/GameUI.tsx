@@ -11,10 +11,10 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
     <div className="space-y-4">
       {/* Game Title */}
       <div className="nes-container is-dark with-title">
-        <p className="title text-white">MONAD DUNGEON</p>
+        <p className="title text-white">魔纳地牢</p>
         <div className="text-center">
           <p className="nes-text is-primary text-sm mb-2">
-            Collect treasures and find portals!
+            收集宝物，找到传送门！
           </p>
         </div>
       </div>
@@ -24,13 +24,13 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="nes-text">LEVEL:</span>
+              <span className="nes-text">层数:</span>
               <span className="nes-text is-warning">
                 {gameState.currentLevel}/10
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="nes-text">STEPS:</span>
+              <span className="nes-text">步数:</span>
               <span className="nes-text is-primary">
                 {gameState.steps}
               </span>
@@ -39,13 +39,13 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
           
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="nes-text">TREASURE:</span>
+              <span className="nes-text">宝物:</span>
               <span className="nes-text is-success">
                 {gameState.treasuresCollected}/{gameState.totalTreasures}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="nes-text">STATUS:</span>
+              <span className="nes-text">状态:</span>
               <span className={`nes-text ${
                 gameState.gameWon 
                   ? 'is-success' 
@@ -54,10 +54,10 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
                     : 'is-disabled'
               }`}>
                 {gameState.gameWon 
-                  ? 'WON!' 
+                  ? '胜利!' 
                   : gameState.treasuresCollected === gameState.totalTreasures
-                    ? 'READY!'
-                    : 'EXPLORE'
+                    ? '就绪!'
+                    : '探索中'
                 }
               </span>
             </div>
@@ -69,13 +69,13 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
       <div className="nes-container is-dark">
         <div className="text-center space-y-3">
           <p className="nes-text text-xs">
-            CONTROLS: WASD or ARROW KEYS
+            操作: WASD 或方向键
           </p>
           <button 
             className="nes-btn is-error"
             onClick={onReset}
           >
-            RESET GAME
+            重新开始
           </button>
         </div>
       </div>
@@ -85,10 +85,10 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
         <div className="nes-container is-dark">
           <div className="text-center">
             <p className="nes-text is-success mb-2">
-              🎉 VICTORY! 🎉
+              🎉 胜利! 🎉
             </p>
             <p className="nes-text text-xs">
-              Completed in {gameState.steps} steps!
+              用时 {gameState.steps} 步完成!
             </p>
           </div>
         </div>

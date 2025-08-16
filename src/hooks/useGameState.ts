@@ -72,7 +72,7 @@ export const useGameState = () => {
       if (targetCell.type === 'treasure' && !targetCell.treasureCollected) {
         newGrid[newPlayer.y][newPlayer.x].treasureCollected = true;
         newTreasuresCollected++;
-        toast.success(`Treasure collected! (${newTreasuresCollected}/${prev.totalTreasures})`);
+        toast.success(`宝物收集! (${newTreasuresCollected}/${prev.totalTreasures})`);
       }
 
       // Check portal
@@ -81,7 +81,7 @@ export const useGameState = () => {
           // Can advance to next level
           const nextLevel = prev.currentLevel + 1;
           if (nextLevel > MAX_LEVELS) {
-            toast.success('🎉 Congratulations! You completed Monad Dungeon!');
+            toast.success("🎉 恭喜! 你完成了魔纳地牢!");
             return {
               ...prev,
               gameWon: true,
@@ -93,7 +93,7 @@ export const useGameState = () => {
           } else {
             // Generate next level
             const level = generateLevel(nextLevel);
-            toast.success(`Level ${nextLevel} unlocked!`);
+            toast.success(`第 ${nextLevel} 层解锁!`);
             return {
               currentLevel: nextLevel,
               player: level.playerStart,
@@ -114,7 +114,7 @@ export const useGameState = () => {
             };
           }
         } else {
-          toast.warning(`Collect all treasures first! (${newTreasuresCollected}/${prev.totalTreasures})`);
+          toast.warning(`请先收集所有宝物! (${newTreasuresCollected}/${prev.totalTreasures})`);
         }
       }
 
@@ -148,7 +148,7 @@ export const useGameState = () => {
       gameWon: false,
       isMoving: false,
     });
-    toast.success('Game reset!');
+    toast.success("游戏重置!");
   }, []);
 
   return {

@@ -51,7 +51,7 @@ export const DungeonGrid = ({ grid }: DungeonGridProps) => {
 
   return (
     <div className="nes-container is-dark with-title">
-      <p className="title text-white">DUNGEON LEVEL</p>
+      <p className="title text-white">地牢层数</p>
       <div className="dungeon-grid">
         {grid.flat().map((cell, index) => (
           <div

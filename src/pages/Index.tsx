@@ -26,39 +26,39 @@ const Index = () => {
             
             {/* Legend */}
             <div className="nes-container is-dark with-title">
-              <p className="title text-white">LEGEND</p>
+              <p className="title text-white">图例</p>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-green-400 border border-white rounded-sm"></div>
-                  <span className="nes-text">Player</span>
+                  <span className="nes-text">玩家</span>
                 </div>
                 <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-gradient-to-br from-yellow-300 to-yellow-500 border border-yellow-400 rounded-sm flex items-center justify-center">
                     <span className="text-xs">◆</span>
                   </div>
-                  <span className="nes-text">Treasure</span>
+                  <span className="nes-text">宝物</span>
                 </div>
                 <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-gradient-to-br from-purple-400 to-purple-600 border border-purple-400 rounded-sm flex items-center justify-center">
                     <span className="text-xs text-white">⌂</span>
                   </div>
-                  <span className="nes-text">Portal</span>
+                  <span className="nes-text">传送门</span>
                 </div>
                 <div className="nes-legend-item">
                   <div className="w-4 h-4 bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-500 rounded-sm"></div>
-                  <span className="nes-text">Wall</span>
+                  <span className="nes-text">墙壁</span>
                 </div>
               </div>
             </div>
             
             {/* Instructions */}
             <div className="nes-container is-dark with-title">
-              <p className="title text-white">INSTRUCTIONS</p>
+              <p className="title text-white">游戏说明</p>
               <ul className="text-xs space-y-1">
-                <li className="nes-text">• Move with WASD or Arrow Keys</li>
-                <li className="nes-text">• Collect all treasures in each level</li>
-                <li className="nes-text">• Find the portal to advance</li>
-                <li className="nes-text">• Complete all 10 levels to win!</li>
+                <li className="nes-text">• 使用 WASD 或方向键移动</li>
+                <li className="nes-text">• 收集每层的所有宝物</li>
+                <li className="nes-text">• 找到传送门进入下一层</li>
+                <li className="nes-text">• 完成全部10层获得胜利!</li>
               </ul>
             </div>
           </div>
