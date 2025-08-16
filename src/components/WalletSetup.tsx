@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useWallet, getWalletStatusText, getWalletStatusColor } from '@/hooks/useWallet';
-import { formatAddress, formatBalance, MONAD_TESTNET_CONFIG } from '@/utils/wallet';
+import { formatAddress, formatBalance, MONAD_TESTNET_CONFIG, loadWalletFromStorage } from '@/utils/wallet';
 import { Copy, Eye, EyeOff, RefreshCw, Wallet, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +17,9 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
   const { toast } = useToast();
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // 检查是否有存储的钱包（无论连接状态如何）
+  const storedWallet = loadWalletFromStorage();
 
   const handleCreateWallet = async () => {
     try {
@@ -82,6 +85,55 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
     });
   };
 
+  // 导出私钥组件 - 无论钱包连接状态如何都可以使用
+  const ExportPrivateKeyDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="nes-btn w-full">
+          <Eye className="w-4 h-4 mr-2" />
+          导出私钥
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="nes-dialog">
+        <DialogHeader>
+          <DialogTitle className="nes-text is-error">
+            <AlertTriangle className="w-5 h-5 inline mr-2" />
+            安全警告
+          </DialogTitle>
+          <DialogDescription className="nes-text text-sm space-y-2">
+            <p>私钥是您钱包的完全控制权限。</p>
+            <p className="text-red-400">请妥善保管，不要泄露给任何人！</p>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <Alert className="nes-container is-error">
+            <AlertDescription className="nes-text text-xs">
+              任何人获得您的私钥都可以完全控制您的钱包资产。
+            </AlertDescription>
+          </Alert>
+          
+          <Button
+            onClick={handleExportPrivateKey}
+            disabled={isExporting}
+            className="nes-btn is-error w-full"
+          >
+            {isExporting ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                复制中...
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                复制私钥到剪贴板
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   // 统一使用burner wallet流程，检查钱包状态是否为ready
   const canStartGame = wallet.walletStatus === 'ready';
 
@@ -135,6 +187,9 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
             >
               开始游戏
             </Button>
+
+            {/* 私钥导出 - 只要有存储的钱包就显示 */}
+            {<ExportPrivateKeyDialog />}
           </div>
         </div>
       </div>
@@ -146,29 +201,52 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
       {/* 创建钱包 */}
       {!wallet.isConnected && (
         <Card className="nes-container is-dark with-title">
-          <p className="title text-white">创建钱包</p>
+          <p className="title text-white">{storedWallet ? '钱包管理' : '创建钱包'}</p>
           <CardContent className="space-y-4">
-            <CardDescription className="nes-text">
-              需要创建一个临时钱包来开始游戏。钱包将存储在您的浏览器中。
-            </CardDescription>
-            
-            <Button
-              onClick={handleCreateWallet}
-              disabled={wallet.isLoading}
-              className="nes-btn is-primary w-full"
-            >
-              {wallet.isLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  创建中...
-                </>
-              ) : (
-                <>
-                  <Wallet className="w-4 h-4 mr-2" />
-                  创建钱包
-                </>
-              )}
-            </Button>
+            {!storedWallet ? (
+              <>
+                <CardDescription className="nes-text">
+                  需要创建一个临时钱包来开始游戏。钱包将存储在您的浏览器中。
+                </CardDescription>
+                
+                <Button
+                  onClick={handleCreateWallet}
+                  disabled={wallet.isLoading}
+                  className="nes-btn is-primary w-full"
+                >
+                  {wallet.isLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      创建中...
+                    </>
+                  ) : (
+                    <>
+                      <Wallet className="w-4 h-4 mr-2" />
+                      创建钱包
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <CardDescription className="nes-text">
+                  检测到本地钱包数据。你可以重新加载钱包或导出私钥。
+                </CardDescription>
+                
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="nes-btn is-primary w-full"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    重新加载钱包
+                  </Button>
+                  
+                  {/* 私钥导出 - 有存储钱包时显示 */}
+                  <ExportPrivateKeyDialog />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -220,52 +298,8 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
               </p>
             </div>
 
-            {/* 私钥导出 */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="nes-btn w-full">
-                  <Eye className="w-4 h-4 mr-2" />
-                  导出私钥
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="nes-dialog">
-                <DialogHeader>
-                  <DialogTitle className="nes-text is-error">
-                    <AlertTriangle className="w-5 h-5 inline mr-2" />
-                    安全警告
-                  </DialogTitle>
-                  <DialogDescription className="nes-text text-sm space-y-2">
-                    <p>私钥是您钱包的完全控制权限。</p>
-                    <p className="text-red-400">请妥善保管，不要泄露给任何人！</p>
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Alert className="nes-container is-error">
-                    <AlertDescription className="nes-text text-xs">
-                      任何人获得您的私钥都可以完全控制您的钱包资产。
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <Button
-                    onClick={handleExportPrivateKey}
-                    disabled={isExporting}
-                    className="nes-btn is-error w-full"
-                  >
-                    {isExporting ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        复制中...
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        复制私钥到剪贴板
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* 私钥导出 - 统一使用组件 */}
+            {storedWallet && <ExportPrivateKeyDialog />}
           </div>
         </div>
       )}

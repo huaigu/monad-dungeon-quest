@@ -14,9 +14,16 @@ const Landing = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="nes-text is-primary text-4xl md:text-6xl mb-4 pixel-font">
-            魔纳地牢
-          </h1>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-4">
+            <img 
+              src="/images/logo.jpg" 
+              alt="Monad Dungeon Quest Logo" 
+              className="w-20 h-20 sm:w-20 sm:h-20 md:w-20 md:h-20 object-contain rounded-lg shadow-lg border-2 border-primary/20"
+            />
+            <h1 className="nes-text is-primary text-3xl sm:text-4xl md:text-6xl pixel-font text-center sm:text-left">
+              魔纳地牢
+            </h1>
+          </div>
           <p className="nes-text text-lg mb-2">MONAD DUNGEON</p>
           <p className="nes-text is-warning">复古像素风格区块链冒险游戏</p>
         </div>

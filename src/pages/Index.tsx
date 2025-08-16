@@ -122,6 +122,23 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background p-2">
       <div className="max-w-7xl mx-auto">
+        {/* Top Navigation Bar */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <Button
+              onClick={() => navigate('/')}
+              className="nes-btn is-primary"
+              style={{ fontSize: '14px', height: '36px' }}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              返回首页
+            </Button>
+            <h1 className="nes-text is-primary text-xl md:text-2xl pixel-font">
+              魔纳地牢
+            </h1>
+          </div>
+        </div>
+
         <div className="grid xl:grid-cols-3 gap-4 items-start">
           {/* Game Grid - Takes 2/3 of the space */}
           <div className="xl:col-span-2 flex justify-center">
@@ -130,6 +147,7 @@ const Index = () => {
           
           {/* Game UI - Takes 1/3 of the space */}
           <div className="space-y-3">
+
             {/* Wallet Display */}
             <WalletDisplay 
               ref={walletDisplayRef}
