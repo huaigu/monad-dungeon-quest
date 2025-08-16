@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,7 +19,18 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
   const [isExporting, setIsExporting] = useState(false);
   
   // 检查是否有存储的钱包（无论连接状态如何）
-  const storedWallet = loadWalletFromStorage();
+  const [storedWallet, setStoredWallet] = useState(() => loadWalletFromStorage());
+  
+  // 监听钱包状态变化，同步更新 storedWallet
+  useEffect(() => {
+    const walletFromStorage = loadWalletFromStorage();
+    setStoredWallet(walletFromStorage);
+  }, [wallet.address, wallet.isConnected]);
+  
+  // 调试日志
+  console.log('WalletSetup - storedWallet:', storedWallet);
+  console.log('WalletSetup - wallet.isConnected:', wallet.isConnected);
+  console.log('WalletSetup - wallet.walletStatus:', wallet.walletStatus);
 
   const handleCreateWallet = async () => {
     try {
@@ -65,6 +76,12 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
           title: "私钥已复制",
           description: "私钥已安全复制到剪贴板，请妥善保管",
         });
+      } else {
+        toast({
+          title: "导出失败",
+          description: "未找到钱包私钥",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({
@@ -89,7 +106,7 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
   const ExportPrivateKeyDialog = () => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="nes-btn w-full">
+        <Button variant="outline" className="nes-btn is-warning w-full">
           <Eye className="w-4 h-4 mr-2" />
           导出私钥
         </Button>
@@ -189,7 +206,7 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
             </Button>
 
             {/* 私钥导出 - 只要有存储的钱包就显示 */}
-            {<ExportPrivateKeyDialog />}
+            {storedWallet && <ExportPrivateKeyDialog />}
           </div>
         </div>
       </div>
