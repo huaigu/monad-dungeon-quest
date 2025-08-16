@@ -54,9 +54,9 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
           
           <div className="col-span-2 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="nes-text">钻石:</span>
+              <span className="nes-text">积分:</span>
               <span className="nes-text is-primary">
-                {gameState.totalDiamonds}
+                {gameState.totalDiamonds * 3}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -91,7 +91,7 @@ export const GameUI = ({ gameState, onReset }: GameUIProps) => {
               用时 {gameState.steps} 步完成!
             </p>
             <p className="nes-text text-xs">
-              总钻石: {gameState.totalDiamonds}颗
+              总积分: {gameState.totalDiamonds * 3}分
             </p>
           </div>
         </div>

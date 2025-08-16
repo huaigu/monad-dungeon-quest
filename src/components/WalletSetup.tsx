@@ -18,15 +18,6 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // 添加调试日志
-  console.log('=== WalletSetup Debug Info ===');
-  console.log('wallet.walletStatus:', wallet.walletStatus);
-  console.log('wallet.isConnected:', wallet.isConnected);
-  console.log('wallet.hasMinimumBalance:', wallet.hasMinimumBalance);
-  console.log('wallet.balance:', wallet.balance);
-  console.log('wallet.address:', wallet.address);
-  console.log('getWalletStatusText:', getWalletStatusText(wallet.walletStatus));
-
   const handleCreateWallet = async () => {
     try {
       await wallet.createWallet();
@@ -93,10 +84,6 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
 
   // 统一使用burner wallet流程，检查钱包状态是否为ready
   const canStartGame = wallet.walletStatus === 'ready';
-
-  console.log('canStartGame:', canStartGame);
-  console.log('walletStatus:', wallet.walletStatus);
-  console.log('=================================');
 
   if (canStartGame) {
     return (

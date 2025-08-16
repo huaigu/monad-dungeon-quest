@@ -1,63 +1,49 @@
 import { DungeonGrid } from '@/components/DungeonGrid';
 import { GameUI } from '@/components/GameUI';
-import { useGameState } from '@/hooks/useGameState';
+import { WalletDisplay, WalletDisplayRef } from '@/components/WalletDisplay';
+import { useOnChainGameState } from '@/hooks/useOnChainGameState';
 import { useKeyboard } from '@/hooks/useKeyboard';
 import { useWallet } from '@/hooks/useWallet';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useEffect } from 'react';
-import { formatAddress, formatBalance } from '@/utils/wallet';
-import { ArrowLeft, Wallet } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { ArrowLeft, Link } from 'lucide-react';
 
 const Index = () => {
-  const { gameState, movePlayer, resetGame, activatePortal } = useGameState();
+  const { gameState, movePlayer, resetGame, activatePortal, isOnChain, gameContract, playerState, gameStarted, playerStateLoaded, startGameManually } = useOnChainGameState();
   const wallet = useWallet();
   const navigate = useNavigate();
-
-  // 添加详细的调试日志
-  console.log('=== Index.tsx Debug Info ===');
-  console.log('Wallet isConnected:', wallet.isConnected);
-  console.log('Wallet walletStatus:', wallet.walletStatus);
-  console.log('Wallet hasMinimumBalance:', wallet.hasMinimumBalance);
-  console.log('Wallet balance:', wallet.balance);
-  console.log('Wallet address:', wallet.address);
-  console.log('Wallet loading:', wallet.isLoading);
-  console.log('Wallet error:', wallet.error);
+  const walletDisplayRef = useRef<WalletDisplayRef>(null);
 
   // 检查钱包状态，如果不满足游戏条件则重定向到主页
   useEffect(() => {
-    console.log('=== useEffect Wallet Check ===');
-    console.log('wallet.isConnected:', wallet.isConnected);
-    console.log('wallet.hasMinimumBalance:', wallet.hasMinimumBalance);
-    console.log('wallet.isLoading:', wallet.isLoading);
-    console.log('wallet.balance:', wallet.balance);
-    
     // 如果钱包还在加载中，等待加载完成
     if (wallet.isLoading) {
-      console.log('⏳ Wallet is loading, waiting...');
-      return;
-    }
-    
-    // 如果钱包已连接但余额为0，给一些时间让余额加载
-    if (wallet.isConnected && wallet.balance === '0') {
-      console.log('⏳ Wallet connected but balance is 0, waiting for balance to load...');
       return;
     }
     
     // 统一使用burner wallet流程，只检查余额是否满足要求
     if (!wallet.isConnected || !wallet.hasMinimumBalance) {
-      console.log('❌ Wallet conditions not met, redirecting to /');
-      console.log('  - isConnected:', wallet.isConnected);
-      console.log('  - hasMinimumBalance:', wallet.hasMinimumBalance);
       navigate('/');
-    } else {
-      console.log('✅ Wallet conditions met, staying on game page');
     }
-  }, [wallet.isConnected, wallet.hasMinimumBalance, wallet.isLoading, wallet.balance, navigate]);
+  }, [wallet.isConnected, wallet.hasMinimumBalance, wallet.isLoading, navigate]);
+
+  // 包装移动函数，在操作后刷新余额
+  const handleMovePlayer = async (direction: 'up' | 'down' | 'left' | 'right') => {
+    try {
+      await movePlayer(direction);
+      // 操作完成后刷新余额
+      setTimeout(() => {
+        walletDisplayRef.current?.refresh();
+      }, 1000); // 等待1秒确保交易完成
+    } catch (error) {
+      console.error('移动失败:', error);
+    }
+  };
 
   useKeyboard({
-    onMove: movePlayer,
+    onMove: handleMovePlayer,
     onActivatePortal: activatePortal,
     enabled: !gameState.gameWon && wallet.walletStatus === 'ready',
   });
@@ -99,30 +85,95 @@ const Index = () => {
           
           {/* Game UI - Takes 1/3 of the space */}
           <div className="space-y-3">
-            {/* Wallet Info */}
+            {/* Wallet Display */}
+            <WalletDisplay 
+              ref={walletDisplayRef}
+              onBalanceUpdate={() => {
+                // 余额更新回调 - 移除调试日志避免过多输出
+              }}
+            />
+
+            {/* Chain Mode Status */}
             <div className="nes-container is-dark with-title">
-              <p className="title text-white">钱包信息</p>
-              <div className="space-y-2 text-xs">
+              <p className="title text-white">游戏状态</p>
+              <div className="space-y-3 text-xs">
                 <div className="flex items-center gap-2">
-                  <Wallet className="w-3 h-3" />
-                  <span className="nes-text">{formatAddress(wallet.address || '')}</span>
+                  <Link className="w-4 h-4 text-green-400" />
+                  <span className="nes-text">链上模式</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="nes-text">余额:</span>
-                  <span className="nes-text text-yellow-400">
-                    {formatBalance(wallet.balance)} MON
-                  </span>
+                
+                <div className="text-xs text-gray-400">
+                  合约: {import.meta.env.VITE_CONTRACT_ADDRESS?.slice(0, 6)}...{import.meta.env.VITE_CONTRACT_ADDRESS?.slice(-4)}
                 </div>
-                <div className="text-center">
+
+                {/* 显示玩家状态信息 */}
+                {playerState && (
+                  <div className="space-y-1">
+                    <div className="text-xs text-blue-400">
+                      关卡: {playerState.level} | 步数: {playerState.steps} | 积分: {playerState.gems * 3}
+                    </div>
+                    <div className="text-xs text-green-400">
+                      位置: ({playerState.x}, {playerState.y})
+                    </div>
+                  </div>
+                )}
+
+                {/* 开始游戏按钮 - 只有在无法获取到玩家状态或玩家状态显示未开始时才显示 */}
+                {(!playerStateLoaded || (playerState && !gameStarted)) && !gameContract.isProcessing && (
                   <Button
-                    onClick={() => navigate('/')}
-                    variant="outline"
-                    size="sm"
-                    className="nes-btn is-small w-full"
+                    onClick={async () => {
+                      await startGameManually();
+                      // 操作完成后刷新余额
+                      setTimeout(() => {
+                        walletDisplayRef.current?.refresh();
+                      }, 1000);
+                    }}
+                    className="nes-btn is-success is-small w-full"
+                    style={{ fontSize: '10px', height: '28px' }}
                   >
-                    返回钱包设置
+                    开始游戏
                   </Button>
-                </div>
+                )}
+
+                {playerStateLoaded && gameStarted && (
+                  <div className="text-xs text-green-400">
+                    ✓ 游戏已开始，可以移动了！
+                  </div>
+                )}
+
+                {/* 显示加载状态 */}
+                {!playerStateLoaded && !gameContract.isProcessing && (
+                  <div className="text-xs text-yellow-400">
+                    正在加载玩家状态...
+                  </div>
+                )}
+
+                {gameContract.isProcessing && (
+                  <div className="nes-container is-rounded bg-yellow-900 border-yellow-500">
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin w-3 h-3 border border-yellow-400 border-t-transparent rounded-full"></div>
+                      <span className="nes-text text-yellow-400">正在上链...</span>
+                    </div>
+                    {gameContract.lastTxHash && (
+                      <div className="mt-1">
+                        <a
+                          href={`https://testnet.monadexplorer.com/tx/${gameContract.lastTxHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 text-xs break-all"
+                        >
+                          查看交易
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {gameContract.error && (
+                  <div className="nes-container is-rounded bg-red-900 border-red-500">
+                    <span className="nes-text text-red-400 text-xs">{gameContract.error}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -160,6 +211,8 @@ const Index = () => {
                 <p className="nes-text">移动: WASD/方向键</p>
                 <p className="nes-text">传送: 空格键</p>
                 <p className="nes-text">目标: 完成10层获胜</p>
+                <p className="nes-text">宝石积分: 3分</p>
+                <p className="nes-text">宝箱积分: 1-5分不等</p>
               </div>
             </div>
           </div>
