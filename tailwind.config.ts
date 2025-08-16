@@ -18,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				mono: ['JetBrains Mono', 'monospace'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,7 +64,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Dungeon game colors
+				'game-border': 'hsl(var(--game-border))',
+				'game-highlight': 'hsl(var(--game-highlight))',
+				'game-success': 'hsl(var(--game-success))',
+				'game-warning': 'hsl(var(--game-warning))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

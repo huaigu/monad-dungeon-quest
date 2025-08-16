@@ -2,39 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Monad Dungeon Design System - Pixel Art Dungeon Crawler */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dungeon Color Palette */
+    --background: 240 8% 8%;
+    --foreground: 50 90% 85%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 240 12% 12%;
+    --card-foreground: 50 90% 85%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 240 12% 12%;
+    --popover-foreground: 50 90% 85%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 95% 65%;
+    --primary-foreground: 240 8% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 15% 20%;
+    --secondary-foreground: 50 90% 85%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 12% 15%;
+    --muted-foreground: 50 30% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 270 75% 65%;
+    --accent-foreground: 240 8% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 50 90% 85%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 15% 25%;
+    --input: 240 15% 25%;
+    --ring: 45 95% 65%;
+
+    /* Dungeon Game Colors */
+    --dungeon-wall: 240 8% 18%;
+    --dungeon-floor: 240 12% 12%;
+    --dungeon-treasure: 45 95% 65%;
+    --dungeon-portal: 270 75% 65%;
+    --dungeon-player: 120 75% 55%;
+    --dungeon-shadow: 240 20% 5%;
+    
+    /* Game UI */
+    --game-border: 50 30% 40%;
+    --game-highlight: 50 90% 85%;
+    --game-success: 120 75% 55%;
+    --game-warning: 30 95% 65%;
 
     --radius: 0.5rem;
 
@@ -100,6 +114,68 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
+}
+
+@layer components {
+  /* Pixel perfect grid styling */
+  .dungeon-grid {
+    @apply grid gap-0 border-2 border-game-border;
+    grid-template-columns: repeat(10, 1fr);
+    image-rendering: pixelated;
+  }
+  
+  .dungeon-cell {
+    @apply aspect-square border border-game-border/30 relative overflow-hidden;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .cell-wall {
+    @apply bg-[hsl(var(--dungeon-wall))] border-game-border;
+  }
+  
+  .cell-floor {
+    @apply bg-[hsl(var(--dungeon-floor))] hover:bg-[hsl(var(--dungeon-floor))]/80;
+  }
+  
+  .cell-treasure {
+    @apply bg-[hsl(var(--dungeon-treasure))] animate-pulse;
+  }
+  
+  .cell-portal {
+    @apply bg-[hsl(var(--dungeon-portal))] animate-pulse;
+  }
+  
+  .player-sprite {
+    @apply absolute inset-0 bg-[hsl(var(--dungeon-player))] rounded-sm;
+    animation: player-idle 2s ease-in-out infinite;
+  }
+  
+  .game-ui {
+    @apply bg-card border border-border rounded-lg p-4 font-mono;
+  }
+  
+  .pixel-button {
+    @apply bg-primary text-primary-foreground border-2 border-ring px-4 py-2 font-bold;
+    @apply hover:bg-primary/90 transition-colors;
+    image-rendering: pixelated;
+  }
+}
+
+@layer utilities {
+  .pixel-art {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}
+
+@keyframes player-idle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
