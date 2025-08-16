@@ -308,24 +308,6 @@ export function WalletSetup({ onWalletReady }: WalletSetupProps) {
         </div>
       )}
 
-      {/* 开发模式测试按钮 */}
-      {import.meta.env.DEV && wallet.isConnected && !wallet.hasMinimumBalance && (
-        <div className="nes-container is-warning with-title">
-          <p className="title text-amber-600">开发模式</p>
-          <div className="space-y-3">
-            <p className="nes-text text-sm">
-              开发环境下可以跳过余额检查直接进入游戏进行测试
-            </p>
-            <Button
-              onClick={onWalletReady}
-              className="nes-btn is-warning w-full"
-              disabled={wallet.isLoading}
-            >
-              🚀 跳过余额检查，直接开始游戏
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* 错误信息 */}
       {wallet.error && (

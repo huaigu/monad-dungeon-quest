@@ -11,11 +11,12 @@ interface WalletDisplayProps {
 
 export interface WalletDisplayRef {
   refresh: () => Promise<void>;
+  silentRefresh: () => Promise<void>;
 }
 
 export const WalletDisplay = forwardRef<WalletDisplayRef, WalletDisplayProps>(
   ({ onBalanceUpdate }, ref) => {
-    const { balance, isLoading, refresh } = useBalance();
+    const { balance, isLoading, refresh, silentRefresh } = useBalance();
     const [copied, setCopied] = useState(false);
 
     const walletInfo = loadWalletFromStorage();
@@ -24,6 +25,10 @@ export const WalletDisplay = forwardRef<WalletDisplayRef, WalletDisplayProps>(
     useImperativeHandle(ref, () => ({
       refresh: async () => {
         await refresh();
+        onBalanceUpdate?.();
+      },
+      silentRefresh: async () => {
+        await silentRefresh();
         onBalanceUpdate?.();
       },
     }));

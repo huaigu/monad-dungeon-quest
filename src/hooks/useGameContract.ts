@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
 import contractABI from './abi.json';
 import { loadWalletFromStorage, MONAD_TESTNET_CONFIG } from '@/utils/wallet';
@@ -39,11 +39,25 @@ const INITIAL_STATE: GameContractState = {
   isProcessing: false,
   lastTxHash: null,
   error: null,
-  contractAddress: '',
+  contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS || '',
 };
+
+// 调试：打印环境变量
+console.log('VITE_CONTRACT_ADDRESS from env:', import.meta.env.VITE_CONTRACT_ADDRESS);
+console.log('INITIAL_STATE.contractAddress:', INITIAL_STATE.contractAddress);
 
 export function useGameContract(): GameContractState & GameContractActions {
   const [state, setState] = useState<GameContractState>(INITIAL_STATE);
+
+  // 确保合约地址在钩子初始化时设置
+  useEffect(() => {
+    const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+    console.log('useGameContract useEffect: contractAddress from env:', contractAddress);
+    if (contractAddress && !state.contractAddress) {
+      setState(prev => ({ ...prev, contractAddress }));
+      console.log('useGameContract: 设置合约地址为:', contractAddress);
+    }
+  }, [state.contractAddress]);
 
   // 设置合约地址
   const setContractAddress = useCallback((address: string) => {

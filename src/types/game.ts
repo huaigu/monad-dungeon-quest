@@ -107,6 +107,7 @@ export interface WalletActions {
   loadWallet: () => WalletInfo | null;
   clearWallet: () => void;
   refreshBalance: () => Promise<void>;
+  silentRefreshBalance: () => Promise<void>;
   exportPrivateKey: () => string | null;
 }
 

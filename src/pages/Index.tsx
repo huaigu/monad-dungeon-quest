@@ -7,7 +7,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Link } from 'lucide-react';
 
 const Index = () => {
@@ -15,6 +15,7 @@ const Index = () => {
   const wallet = useWallet();
   const navigate = useNavigate();
   const walletDisplayRef = useRef<WalletDisplayRef>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // 跟踪是否为首次加载
 
   // 检查钱包状态，如果不满足游戏条件则重定向到主页
   useEffect(() => {
@@ -23,19 +24,45 @@ const Index = () => {
       return;
     }
     
-    // 统一使用burner wallet流程，只检查余额是否满足要求
-    if (!wallet.isConnected || !wallet.hasMinimumBalance) {
+    // 钱包加载完成，标记不再是初始加载状态
+    if (isInitialLoad && !wallet.isLoading) {
+      setIsInitialLoad(false);
+    }
+    
+    // 如果钱包未连接，重定向到主页
+    if (!wallet.isConnected) {
+      navigate('/');
+      return;
+    }
+    
+    // 如果钱包已连接但余额仍为0（可能还在加载），给一些时间等待余额加载
+    if (wallet.isConnected && wallet.balance === '0') {
+      // 给3秒时间让余额加载完成
+      const timeoutId = setTimeout(() => {
+        // 3秒后如果仍然没有最小余额，则重定向
+        if (!wallet.hasMinimumBalance) {
+          navigate('/');
+        }
+        // 无论如何，3秒后都标记为非初始加载
+        setIsInitialLoad(false);
+      }, 3000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+    
+    // 余额已加载但不足时，重定向到主页
+    if (wallet.balance !== '0' && !wallet.hasMinimumBalance) {
       navigate('/');
     }
-  }, [wallet.isConnected, wallet.hasMinimumBalance, wallet.isLoading, navigate]);
+  }, [wallet.isConnected, wallet.hasMinimumBalance, wallet.isLoading, wallet.balance, navigate, isInitialLoad]);
 
   // 包装移动函数，在操作后刷新余额
   const handleMovePlayer = async (direction: 'up' | 'down' | 'left' | 'right') => {
     try {
       await movePlayer(direction);
-      // 操作完成后刷新余额
+      // 操作完成后静默刷新余额，不显示loading状态
       setTimeout(() => {
-        walletDisplayRef.current?.refresh();
+        walletDisplayRef.current?.silentRefresh();
       }, 1000); // 等待1秒确保交易完成
     } catch (error) {
       console.error('移动失败:', error);
@@ -47,6 +74,24 @@ const Index = () => {
     onActivatePortal: activatePortal,
     enabled: !gameState.gameWon && wallet.walletStatus === 'ready',
   });
+
+  // 只有在首次加载且钱包正在加载时，才显示全屏加载状态
+  if (isInitialLoad && (wallet.isLoading || (wallet.isConnected && wallet.balance === '0'))) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="max-w-md mx-auto">
+          <div className="nes-container is-dark">
+            <div className="flex items-center gap-3">
+              <div className="animate-spin w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full"></div>
+              <span className="nes-text text-blue-400">
+                {wallet.isLoading ? '正在加载钱包...' : '正在获取余额...'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 如果钱包状态不满足游戏条件，显示警告
   const shouldShowWarning = !wallet.isConnected || !wallet.hasMinimumBalance;
@@ -123,9 +168,9 @@ const Index = () => {
                   <Button
                     onClick={async () => {
                       await startGameManually();
-                      // 操作完成后刷新余额
+                      // 操作完成后静默刷新余额，不显示loading状态
                       setTimeout(() => {
-                        walletDisplayRef.current?.refresh();
+                        walletDisplayRef.current?.silentRefresh();
                       }, 1000);
                     }}
                     className="nes-btn is-success is-small w-full"

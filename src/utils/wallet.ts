@@ -133,25 +133,6 @@ export function clearWalletFromStorage(): void {
  */
 export async function getWalletBalance(address: string): Promise<string> {
   try {
-    // 在开发环境中，如果无法连接到网络，返回模拟余额
-    if (import.meta.env.DEV) {
-      // 尝试连接，如果失败则返回模拟余额
-      try {
-        const provider = new ethers.JsonRpcProvider(MONAD_TESTNET_CONFIG.rpcUrl);
-        const balance = await Promise.race([
-          provider.getBalance(address),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-        ]);
-        const formattedBalance = ethers.formatEther(balance as bigint);
-        return formattedBalance;
-      } catch (error) {
-        console.warn('无法连接到 Monad Testnet，使用模拟余额');
-        // 返回足够的模拟余额用于开发测试
-        return '1.0';
-      }
-    }
-    
-    // 生产环境中正常查询
     const provider = new ethers.JsonRpcProvider(MONAD_TESTNET_CONFIG.rpcUrl);
     const balance = await provider.getBalance(address);
     return ethers.formatEther(balance);

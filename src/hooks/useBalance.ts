@@ -15,9 +15,11 @@ export function useBalance() {
     error: null,
   });
 
-  // 获取余额
-  const fetchBalance = useCallback(async () => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+  // 获取余额的核心逻辑
+  const fetchBalanceCore = useCallback(async (showLoading: boolean = true) => {
+    if (showLoading) {
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+    }
 
     try {
       const walletInfo = loadWalletFromStorage();
@@ -44,11 +46,17 @@ export function useBalance() {
       console.error('获取余额失败:', error);
       setState(prev => ({
         ...prev,
-        isLoading: false,
+        isLoading: showLoading ? false : prev.isLoading,
         error: error instanceof Error ? error.message : '获取余额失败',
       }));
     }
   }, []);
+
+  // 获取余额（显示loading）
+  const fetchBalance = useCallback(() => fetchBalanceCore(true), [fetchBalanceCore]);
+
+  // 静默刷新余额（不显示loading）
+  const silentRefresh = useCallback(() => fetchBalanceCore(false), [fetchBalanceCore]);
 
   // 定时刷新余额（每30秒）
   useEffect(() => {
@@ -64,5 +72,6 @@ export function useBalance() {
   return {
     ...state,
     refresh: fetchBalance,
+    silentRefresh, // 静默刷新方法
   };
 }

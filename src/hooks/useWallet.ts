@@ -48,14 +48,16 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
 
   const [state, setState] = useState<WalletState>(() => initializeWalletState());
 
-  // 刷新余额
-  const refreshBalance = useCallback(async () => {
+  // 核心刷新余额逻辑
+  const refreshBalanceCore = useCallback(async (showLoading: boolean = true) => {
     const walletInfo = loadWalletFromStorage();
     if (!walletInfo?.address) {
       return;
     }
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    if (showLoading) {
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+    }
 
     try {
       const balance = await getWalletBalance(walletInfo.address);
@@ -72,11 +74,17 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
       console.error('刷新余额失败:', error);
       setState(prev => ({
         ...prev,
-        isLoading: false,
+        isLoading: showLoading ? false : prev.isLoading,
         error: '获取余额失败',
       }));
     }
-  }, []); // 移除所有依赖，使用函数内部获取最新的钱包信息
+  }, []);
+
+  // 刷新余额（显示loading）
+  const refreshBalance = useCallback(() => refreshBalanceCore(true), [refreshBalanceCore]);
+
+  // 静默刷新余额（不显示loading）
+  const silentRefreshBalance = useCallback(() => refreshBalanceCore(false), [refreshBalanceCore]);
 
   // 创建新钱包
   const createWallet = useCallback(async (): Promise<WalletInfo> => {
@@ -187,12 +195,12 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
   }, [state.isConnected, state.address, state.balance]); // 移除 refreshBalance 依赖
 
   useEffect(() => {
-    // 如果有钱包地址，开始定时刷新余额
+    // 如果有钱包地址，开始定时刷新余额（使用静默刷新，不显示loading）
     if (state.address && state.isConnected) {
-      const interval = setInterval(refreshBalance, BALANCE_REFRESH_INTERVAL);
+      const interval = setInterval(silentRefreshBalance, BALANCE_REFRESH_INTERVAL);
       return () => clearInterval(interval);
     }
-  }, [state.address, state.isConnected]); // 移除 refreshBalance 依赖
+  }, [state.address, state.isConnected, silentRefreshBalance]);
 
   return {
     ...state,
@@ -201,6 +209,7 @@ export function useWallet(): WalletState & WalletActions & { walletStatus: Walle
     loadWallet,
     clearWallet,
     refreshBalance,
+    silentRefreshBalance, // 暴露静默刷新方法
     exportPrivateKey,
   };
 }

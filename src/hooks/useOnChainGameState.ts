@@ -97,10 +97,7 @@ export const useOnChainGameState = () => {
           return;
         }
 
-        gameContract.setContractAddress(contractAddress);
-        
-        // 添加小延迟确保合约地址设置完成
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('使用合约地址:', contractAddress);
         
         const playerData = await gameContract.getPlayer(walletInfo.address);
         
@@ -120,15 +117,26 @@ export const useOnChainGameState = () => {
             setTimeout(() => {
               if (mounted) {
                 // 同步玩家位置和数据到本地状态（在loadLevel之后，确保覆盖关卡默认数据）
-                setGameState(prev => ({
-                  ...prev,
-                  currentLevel: playerData.level,
-                  player: { x: playerData.x, y: playerData.y }, // 使用链上实际位置覆盖关卡起始位置
-                  steps: playerData.steps,
-                  totalDiamonds: playerData.gems,
-                  // 宝物和宝箱收集状态保持关卡默认值，因为每次加载关卡都会重置
-                  // 这确保游戏逻辑的一致性
-                }));
+                setGameState(prev => {
+                  // 更新dungeonGrid中的玩家位置
+                  const newGrid = prev.dungeonGrid.map(row =>
+                    row.map(cell => ({
+                      ...cell,
+                      hasPlayer: cell.x === playerData.x && cell.y === playerData.y,
+                    }))
+                  );
+
+                  return {
+                    ...prev,
+                    currentLevel: playerData.level,
+                    player: { x: playerData.x, y: playerData.y }, // 使用链上实际位置覆盖关卡起始位置
+                    steps: playerData.steps,
+                    totalDiamonds: playerData.gems,
+                    dungeonGrid: newGrid, // 更新网格中的玩家位置
+                    // 宝物和宝箱收集状态保持关卡默认值，因为每次加载关卡都会重置
+                    // 这确保游戏逻辑的一致性
+                  };
+                });
               }
             }, 100);
           }
@@ -155,6 +163,48 @@ export const useOnChainGameState = () => {
       mounted = false;
     };
   }, []); // 空依赖数组，只在挂载时执行一次
+
+  // 验证移动是否有效
+  const isValidMove = useCallback((direction: 'up' | 'down' | 'left' | 'right'): boolean => {
+    const currentPlayer = gameState.player;
+    let targetX = currentPlayer.x;
+    let targetY = currentPlayer.y;
+
+    // 计算目标位置
+    switch (direction) {
+      case 'up':
+        targetY = Math.max(0, currentPlayer.y - 1);
+        break;
+      case 'down':
+        targetY = Math.min(GRID_SIZE - 1, currentPlayer.y + 1);
+        break;
+      case 'left':
+        targetX = Math.max(0, currentPlayer.x - 1);
+        break;
+      case 'right':
+        targetX = Math.min(GRID_SIZE - 1, currentPlayer.x + 1);
+        break;
+    }
+
+    // 检查是否移动到了边界外（实际上没有移动）
+    if (targetX === currentPlayer.x && targetY === currentPlayer.y) {
+      return false;
+    }
+
+    // 检查目标位置是否在网格范围内
+    if (targetY < 0 || targetY >= gameState.dungeonGrid.length || 
+        targetX < 0 || targetX >= gameState.dungeonGrid[0].length) {
+      return false;
+    }
+
+    // 检查目标位置是否是墙
+    const targetCell = gameState.dungeonGrid[targetY][targetX];
+    if (targetCell.type === 'wall') {
+      return false;
+    }
+
+    return true;
+  }, [gameState.player, gameState.dungeonGrid]);
 
   // 更新本地游戏状态
   const updateLocalGameState = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
@@ -247,6 +297,13 @@ export const useOnChainGameState = () => {
       return;
     }
 
+    // 本地验证移动是否有效，如果无效则不发送交易
+    if (!isValidMove(direction)) {
+      console.log('移动无效，不发送交易:', direction);
+      toast.warning('无法移动到该位置');
+      return;
+    }
+
     // 设置移动状态
     setGameState(prev => ({ ...prev, isMoving: true }));
 
@@ -255,48 +312,39 @@ export const useOnChainGameState = () => {
       const contractDirection = directionToEnum(direction);
       await gameContract.step(contractDirection);
       
-      // 上链成功后，更新本地游戏状态
+      // 先乐观更新本地状态，提供即时反馈
       updateLocalGameState(direction);
       
-      // 重新从合约获取最新的玩家状态，确保同步
-      try {
-        const walletInfo = loadWalletFromStorage();
-        if (walletInfo) {
-          const updatedPlayerData = await gameContract.getPlayer(walletInfo.address);
-          setPlayerState(updatedPlayerData);
-        }
-      } catch (syncError) {
-        console.error('同步玩家状态失败:', syncError);
-        // 如果同步失败，至少手动更新位置
-        setPlayerState(prev => {
-          if (!prev) return prev;
-          
-          let newX = prev.x;
-          let newY = prev.y;
-          
-          switch (direction) {
-            case 'up':
-              newY = Math.max(0, prev.y - 1);
-              break;
-            case 'down':
-              newY = Math.min(9, prev.y + 1);
-              break;
-            case 'left':
-              newX = Math.max(0, prev.x - 1);
-              break;
-            case 'right':
-              newX = Math.min(9, prev.x + 1);
-              break;
+      // 延迟从合约获取最新状态，确保链上状态同步完成
+      setTimeout(async () => {
+        try {
+          const walletInfo = loadWalletFromStorage();
+          if (walletInfo) {
+            const updatedPlayerData = await gameContract.getPlayer(walletInfo.address);
+            setPlayerState(updatedPlayerData);
+            
+            // 用链上的真实数据覆盖本地状态，确保数据一致性
+            setGameState(prev => {
+              const newGrid = prev.dungeonGrid.map(row =>
+                row.map(cell => ({
+                  ...cell,
+                  hasPlayer: cell.x === updatedPlayerData.x && cell.y === updatedPlayerData.y,
+                }))
+              );
+
+              return {
+                ...prev,
+                player: { x: updatedPlayerData.x, y: updatedPlayerData.y },
+                steps: updatedPlayerData.steps,
+                totalDiamonds: updatedPlayerData.gems,
+                dungeonGrid: newGrid,
+              };
+            });
           }
-          
-          return {
-            ...prev,
-            x: newX,
-            y: newY,
-            steps: prev.steps + 1,
-          };
-        });
-      }
+        } catch (syncError) {
+          console.error('同步玩家状态失败:', syncError);
+        }
+      }, 500); // 给链上处理一些时间
       
       toast.success('移动成功！');
     } catch (error) {
@@ -305,7 +353,7 @@ export const useOnChainGameState = () => {
     } finally {
       setGameState(prev => ({ ...prev, isMoving: false }));
     }
-  }, [gameState.isMoving, gameState.gameWon, gameContract, updateLocalGameState]);
+  }, [gameState.isMoving, gameState.gameWon, gameContract, updateLocalGameState, isValidMove]);
 
   // 手动开始游戏
   const startGameManually = useCallback(async () => {
