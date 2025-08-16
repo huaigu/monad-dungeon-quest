@@ -1,8 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { WalletSetup } from '@/components/WalletSetup';
 
 const Landing = () => {
   const navigate = useNavigate();
+
+  const handleWalletReady = () => {
+    navigate('/game');
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -73,21 +78,8 @@ const Landing = () => {
               </div>
             </div>
             
-            <div className="text-center space-y-4">
-              <p className="nes-text is-error text-sm">
-                注意：您需要创建一个临时钱包并充值少量资金作为Gas费用来开始游戏
-              </p>
-              
-              <div className="space-x-4">
-                <Button 
-                  variant="default"
-                  size="lg"
-                  onClick={() => navigate('/game')}
-                  className="nes-btn is-primary pixel-font"
-                >
-                  创建钱包 & 开始游戏
-                </Button>
-              </div>
+            <div className="mt-6">
+              <WalletSetup onWalletReady={handleWalletReady} />
             </div>
           </div>
         </div>

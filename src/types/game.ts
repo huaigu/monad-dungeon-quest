@@ -74,3 +74,50 @@ export interface DungeonData {
   };
   levels: DungeonLevel[];
 }
+
+// 钱包相关类型定义
+
+export interface WalletInfo {
+  address: string;
+  privateKey: string;
+  mnemonic: string;
+}
+
+export interface WalletState {
+  isConnected: boolean;
+  isLoading: boolean;
+  address: string | null;
+  balance: string;
+  hasMinimumBalance: boolean;
+  error: string | null;
+}
+
+export type WalletStatus = 'disconnected' | 'connected' | 'insufficient_balance' | 'ready';
+
+export interface NetworkConfig {
+  chainId: number;
+  name: string;
+  currency: string;
+  blockExplorer: string;
+  rpcUrl: string;
+}
+
+export interface WalletActions {
+  createWallet: () => Promise<WalletInfo>;
+  loadWallet: () => WalletInfo | null;
+  clearWallet: () => void;
+  refreshBalance: () => Promise<void>;
+  exportPrivateKey: () => string | null;
+}
+
+// MetaMask 类型声明
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+      on: (event: string, callback: (data: unknown) => void) => void;
+      removeListener: (event: string, callback: (data: unknown) => void) => void;
+      isMetaMask?: boolean;
+    };
+  }
+}

@@ -1,0 +1,472 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "initialOwner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        }
+      ],
+      "name": "LevelUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "x",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "y",
+          "type": "uint8"
+        }
+      ],
+      "name": "PlayerStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "x",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "y",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "tile",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "moved",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "advanced",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "collected",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "amount",
+          "type": "uint16"
+        }
+      ],
+      "name": "StepResult",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "GRID_SIZE",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TILE_CHEST",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TILE_FLOOR",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TILE_PORTAL",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TILE_START",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TILE_TREASURE",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TILE_WALL",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        }
+      ],
+      "name": "getLevelTiles",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        }
+      ],
+      "name": "getPlayer",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint32",
+              "name": "level",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "x",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "y",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint64",
+              "name": "steps",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "gems",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bool",
+              "name": "started",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct GameTower.PlayerState",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        }
+      ],
+      "name": "levelExists",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "tiles",
+          "type": "bytes"
+        }
+      ],
+      "name": "setLevel",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint8[]",
+          "name": "tilesArray",
+          "type": "uint8[]"
+        }
+      ],
+      "name": "setLevelArray",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32[]",
+          "name": "levels",
+          "type": "uint32[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "tiles",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "setLevels",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32[]",
+          "name": "levels",
+          "type": "uint32[]"
+        },
+        {
+          "internalType": "uint8[][]",
+          "name": "tilesArrays",
+          "type": "uint8[][]"
+        }
+      ],
+      "name": "setLevelsArray",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "level",
+          "type": "uint32"
+        }
+      ],
+      "name": "startGame",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum GameTower.Direction",
+          "name": "direction",
+          "type": "uint8"
+        }
+      ],
+      "name": "step",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}
